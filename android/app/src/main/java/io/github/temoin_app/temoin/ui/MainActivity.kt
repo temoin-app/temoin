@@ -2,6 +2,7 @@ package io.github.temoin_app.temoin.ui
 
 import android.app.KeyguardManager
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -34,11 +35,14 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val ACTION_QUICK_RECORD = "io.github.temoin_app.temoin.QUICK_RECORD"
+        const val ACTION_QUICK_RECORD_DISCREET = "io.github.temoin_app.temoin.QUICK_RECORD_DISCREET"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(SystemBarStyle.dark(android.graphics.Color.TRANSPARENT), SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
+        // No preview of the camera screen in recents, nor when the app comes back to the front.
+        if (Build.VERSION.SDK_INT >= 33) setRecentsScreenshotEnabled(false)
         val app = application as TemoinApp
         // A recreated activity (process death, recents) still carries the original
         // enrollment intent: only a fresh launch may process it.
@@ -69,11 +73,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handle(intent: Intent?) {
-        if (intent?.action == ACTION_QUICK_RECORD) {
+        if (intent?.action == ACTION_QUICK_RECORD || intent?.action == ACTION_QUICK_RECORD_DISCREET) {
             // Like a camera app: usable over the lock screen, capture only.
             setShowWhenLocked(true)
             setTurnScreenOn(true)
-            (application as TemoinApp).engine.requestAutoRecord()
+            val engine = (application as TemoinApp).engine
+            if (intent.action == ACTION_QUICK_RECORD_DISCREET) engine.requestDiscreetRecord() else engine.requestAutoRecord()
             return
         }
         val link = intent?.dataString?.let { EnrollLink.parse(it) } ?: return

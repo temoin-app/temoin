@@ -12,4 +12,15 @@
             android:targetPackage="io.github.temoin_app.temoin"
             android:targetClass="io.github.temoin_app.temoin.ui.MainActivity" />
     </shortcut>
+    <shortcut
+        android:shortcutId="record_discreet"
+        android:enabled="true"
+        android:icon="@drawable/ic_moon"
+        android:shortcutShortLabel="@string/discreet"
+        android:shortcutLongLabel="@string/shortcut_discreet_long">
+        <intent
+            android:action="io.github.temoin_app.temoin.QUICK_RECORD_DISCREET"
+            android:targetPackage="io.github.temoin_app.temoin"
+            android:targetClass="io.github.temoin_app.temoin.ui.MainActivity" />
+    </shortcut>
 </shortcuts>

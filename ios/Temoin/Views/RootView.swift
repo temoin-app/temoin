@@ -8,6 +8,10 @@ struct RootView: View {
     @EnvironmentObject var model: AppModel
     @EnvironmentObject var settings: Settings
     @State private var showSettings = false
+    @Environment(\.scenePhase) private var phase
+    /// Black until a URL had time to arrive, and in the snapshot iOS shows when coming back:
+    /// the dark-screen widget must never reveal the interface, even for one frame.
+    @State private var cover = true
 
     var body: some View {
         Group {
@@ -19,6 +23,13 @@ struct RootView: View {
             }
         }
         .background(Color.black.ignoresSafeArea())
+        .overlay { if cover { Color.black.ignoresSafeArea() } }
+        .task(id: phase) {
+            if phase == .background { cover = true }
+            guard phase == .active, cover else { return }
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            if !Task.isCancelled { cover = false }
+        }
     }
 }
 

@@ -75,6 +75,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import io.github.temoin_app.temoin.R
 import io.github.temoin_app.temoin.TemoinApp
 import io.github.temoin_app.temoin.capture.Facing
@@ -125,12 +127,31 @@ fun CaptureScreen(app: TemoinApp, onSettings: () -> Unit, settingsAllowed: Boole
     }
 
     // ---- keep screen on while recording; dark (discreet) mode
-    var discreet by remember { mutableStateOf(false) }
+    // Black from the very first frame when opened by the dark-screen widget.
+    var discreet by remember { mutableStateOf(hasCamera && engine.discreetRequest.value) }
+    val discreetRequest by engine.discreetRequest.collectAsState()
+    LaunchedEffect(discreetRequest, hasCamera) {
+        if (discreetRequest && hasCamera) {
+            discreet = true
+            engine.consumeDiscreetRequest()
+        }
+    }
     val view = LocalView.current
+    var wasRecording by remember { mutableStateOf(false) }
     DisposableEffect(st.recording) {
-        view.keepScreenOn = st.recording
-        if (!st.recording) discreet = false
+        view.keepScreenOn = st.recording || discreet
+        // A black screen must never hide a recording that stopped.
+        if (!st.recording && wasRecording) discreet = false
+        wasRecording = st.recording
         onDispose { view.keepScreenOn = false }
+    }
+    // Nor one that could not start.
+    LaunchedEffect(st.error) { if (st.error != null) discreet = false }
+    LaunchedEffect(discreet) {
+        if (discreet) {
+            delay(5_000)
+            if (!st.recording) discreet = false
+        }
     }
     // Window brightness only (reverts by itself when the app leaves the screen or the phone locks).
     val frontLight = st.flashOn && st.camera?.facing == Facing.FRONT
@@ -143,8 +164,12 @@ fun CaptureScreen(app: TemoinApp, onSettings: () -> Unit, settingsAllowed: Boole
             else -> WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
         }
         w.attributes = lp
+        // Status bar only: hiding the navigation bar too makes Android show a "Viewing full screen" banner.
+        val bars = WindowCompat.getInsetsController(w, w.decorView)
+        if (discreet) bars.hide(WindowInsetsCompat.Type.statusBars()) else bars.show(WindowInsetsCompat.Type.statusBars())
         onDispose {
             val l = w.attributes; l.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE; w.attributes = l
+            bars.show(WindowInsetsCompat.Type.statusBars())
         }
     }
 

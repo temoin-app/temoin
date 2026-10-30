@@ -142,7 +142,13 @@ struct CaptureView: View {
             if discreet { DiscreetOverlay { discreet = false } }
         }
         .statusBarHidden(discreet)
+        .persistentSystemOverlays(discreet ? .hidden : .automatic)
+        .onChange(of: model.discreetRequested) { _ in applyDiscreetRequest() }
+        // A black screen must never hide a recording that stopped or failed.
+        .onChange(of: engine.recording) { on in if !on { discreet = false } }
+        .onChange(of: engine.error) { e in if e != nil { discreet = false } }
         .onAppear {
+            applyDiscreetRequest()
             if authorized { engine.start(); askMicrophoneIfNeeded() } else { requestPermissions() }
             startQuickRecordIfAsked()
         }
@@ -150,7 +156,7 @@ struct CaptureView: View {
         .onDisappear { engine.stop() }
         .onChange(of: phase) { p in
             // iOS stops the camera in the background: close the recording cleanly.
-            if p == .background { engine.stop() } else if p == .active && authorized { engine.start(); askMicrophoneIfNeeded() }
+            if p == .background { engine.stop(); discreet = false } else if p == .active && authorized { engine.start(); askMicrophoneIfNeeded() }
         }
         .onChange(of: engine.flash) { _ in
             flashOpacity = 0.8
@@ -162,6 +168,19 @@ struct CaptureView: View {
         .onChange(of: phase) { p in if p == .active { applyBrightness() } else { restoreBrightness() } }
         .onDisappear { restoreBrightness() }
         .task(id: settings.server?.url) { await healthLoop() }
+    }
+
+    /// Dark-screen widget: only with the camera allowed (permission prompts must stay readable).
+    private func applyDiscreetRequest() {
+        guard model.discreetRequested else { return }
+        model.discreetRequested = false
+        guard authorized else { return }
+        discreet = true
+        // Never leave a black screen in front of a recording that did not start.
+        Task {
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            if !engine.recording { discreet = false }
+        }
     }
 
     /// Launched from the "Filmer" intent / widget: switch to Live and start recording,

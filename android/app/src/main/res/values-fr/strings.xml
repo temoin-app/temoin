@@ -98,6 +98,7 @@
     <string name="flash">Flash</string>
     <string name="tile_record">Filmer</string>
     <string name="shortcut_record_long">Filmer tout de suite</string>
+    <string name="shortcut_discreet_long">Filmer tout de suite, écran noir</string>
     <string name="unlock_to_setup">Déverrouillez le téléphone pour configurer Témoin.</string>
     <string name="hb_title">Récupérer mes fichiers</string>
     <string name="hb_help">Vos vidéos et photos ne sont lisibles que par l\'organisateur. Demandez-les : vous obtenez un code à lui transmettre (de vive voix, SMS, Signal…). Il vous enverra par un autre canal un lien à usage unique pour les enregistrer sur n\'importe quel téléphone, même sans cette app.</string>

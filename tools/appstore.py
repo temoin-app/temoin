@@ -125,7 +125,10 @@ def metadata(path, version):
     open_states = ("PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED")
     ver = next((v for v in versions if v["attributes"].get("appStoreState", v["attributes"].get("appVersionState")) in open_states), None)
     if ver is None:
-        sys.exit("no editable App Store version")
+        # The previous version is live or approved: open the next one.
+        ver = call("POST", "/appStoreVersions", {"data": {"type": "appStoreVersions",
+                   "attributes": {"platform": "IOS", "versionString": version},
+                   "relationships": {"app": {"data": {"type": "apps", "id": app_id}}}}})["data"]
     r = call("PATCH", f"/appStoreVersions/{ver['id']}", {"data": {"type": "appStoreVersions", "id": ver["id"],
              "attributes": {"versionString": version, "copyright": meta["copyright"]}}}, soft=True)
     print(f"version {version}:", "ok" if r is not None else "FAILED")
@@ -342,16 +345,20 @@ def main():
         if not active:
             print("no active review submission")
         editable = ("PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED")
+        live = ("READY_FOR_SALE", "READY_FOR_DISTRIBUTION", "PROCESSING_FOR_APP_STORE", "REPLACED_WITH_NEW_VERSION", "REMOVED_FROM_SALE", "DEVELOPER_REMOVED_FROM_SALE")
         for _ in range(40):
             versions = call("GET", f"/apps/{app_id}/appStoreVersions?filter[platform]=IOS")["data"]
-            ver = next(v for v in versions if v["attributes"].get("versionString") == version)
-            state = ver["attributes"].get("appStoreState") or ver["attributes"].get("appVersionState")
+            pending = [v for v in versions if (v["attributes"].get("appStoreState") or v["attributes"].get("appVersionState")) not in live]
+            if not pending:
+                state = "none pending"
+                break
+            state = pending[0]["attributes"].get("appStoreState") or pending[0]["attributes"].get("appVersionState")
             if state in editable:
                 break
             time.sleep(15)
-        print(f"version {version}: {state}")
-        if state not in editable:
-            FAILURES.append(f"version {version} still {state}")
+        print(f"version in progress: {state}")
+        if state not in editable and state != "none pending":
+            FAILURES.append(f"version still {state}")
         if FAILURES:
             sys.exit(1)
     elif cmd == "metadata":

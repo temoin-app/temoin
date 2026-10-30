@@ -13,5 +13,14 @@ struct TemoinShortcuts: AppShortcutsProvider {
             shortTitle: "Filmer",
             systemImageName: "record.circle"
         )
+        AppShortcut(
+            intent: StartDiscreetRecordingIntent(),
+            phrases: [
+                "Écran noir avec \(.applicationName)",
+                "Dark screen with \(.applicationName)",
+            ],
+            shortTitle: "Écran noir",
+            systemImageName: "moon.fill"
+        )
     }
 }

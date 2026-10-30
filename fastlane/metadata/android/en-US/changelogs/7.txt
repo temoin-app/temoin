@@ -1,0 +1,1 @@
+New: a Dark screen widget and shortcut start filming with the screen black at once. The camera opens in video mode, and the capture modes are centred above the shutter.

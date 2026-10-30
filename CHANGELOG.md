@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## v0.1.6
 
+- **Dark screen shortcut**: a home screen widget and app shortcut (plus a Control Center control and Shortcuts action on iPhone, a launcher shortcut on Android) start filming with the screen black from the first frame. On Android the recording continues with the phone locked; on iPhone locking the phone ends it, as iOS stops the camera in the background.
+- iOS: videos had no sound when the camera had been allowed by the invitation scanner, because the microphone was never requested. It is now requested on the capture screen, and a banner shows when it is refused.
 - Apps: the camera opens in video mode; the capture modes have equal widths and the chosen one sits right above the shutter.
 - Android: targets API 36, as Google Play requires since 31 August 2026.
 - Store listing: feature graphic.

@@ -10,8 +10,8 @@ packages:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.1.5"
-    CURRENT_PROJECT_VERSION: "6"
+    MARKETING_VERSION: "0.1.6"
+    CURRENT_PROJECT_VERSION: "7"
 targets:
   Temoin:
     type: application
@@ -27,7 +27,6 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Témoin
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_NSCameraUsageDescription: "Record photos and videos. They are encrypted immediately and cannot be viewed on this phone."
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Record sound with videos. It is encrypted immediately."
@@ -44,6 +43,8 @@ targets:
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
         UIRequiresFullScreen: true
+        UILaunchScreen:
+          UIColorName: LaunchBlack
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
   TemoinWidgets:

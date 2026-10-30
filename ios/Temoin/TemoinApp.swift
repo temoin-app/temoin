@@ -16,7 +16,7 @@ struct TemoinApp: App {
                 .preferredColorScheme(.dark)
                 .onOpenURL { url in
                     if url.scheme == "srec" && url.host == "record" {
-                        QuickRecord.request()
+                        QuickRecord.request(discreet: url.query?.contains("discreet=1") == true)
                     } else if let link = EnrollLink(url.absoluteString) {
                         model.pendingLink = link
                     }
@@ -47,6 +47,8 @@ final class AppModel: ObservableObject {
     @Published var pendingLink: EnrollLink?
     /// Set by the "Filmer" intent / widget / srec://record: start a Live recording at once.
     @Published var quickRecord = false
+    /// The request above also asked for the dark screen.
+    @Published var discreetRequested = false
     /// The widget was used before any server was joined: the welcome screen explains it.
     @Published var serverNeeded = false
     @Published var queueCount = 0
@@ -69,8 +71,10 @@ final class AppModel: ObservableObject {
     func quickRecordRequested(consumed: Bool = false) {
         if settings.server == nil {
             if !consumed { _ = QuickRecord.consume() }
+            _ = QuickRecord.consumeDiscreet()
             serverNeeded = true
         } else {
+            if QuickRecord.consumeDiscreet() { discreetRequested = true }
             quickRecord = true
         }
     }

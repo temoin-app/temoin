@@ -25,6 +25,40 @@ struct RecordWidget: Widget {
     }
 }
 
+/// Same, but the app opens on a dark screen: its interface never shows.
+struct DiscreetRecordWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "io.github.temoin-app.temoin.record.discreet", provider: RecordWidget.Provider()) { _ in
+            DiscreetRecordWidgetView()
+                .widgetURL(URL(string: "srec://record?discreet=1"))
+        }
+        .configurationDisplayName("Écran noir")
+        .description("Commence à filmer immédiatement, écran noir.")
+        .supportedFamilies([.accessoryCircular, .systemSmall])
+    }
+}
+
+struct DiscreetRecordWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+
+    var body: some View {
+        switch family {
+        case .accessoryCircular:
+            ZStack {
+                AccessoryWidgetBackground()
+                Image(systemName: "moon.fill").font(.title2)
+            }
+            .widgetBackground()
+        default:
+            VStack(spacing: 8) {
+                Image(systemName: "moon.fill").font(.system(size: 40)).foregroundStyle(.white)
+                Text("Écran noir").font(.headline)
+            }
+            .widgetBackground()
+        }
+    }
+}
+
 struct RecordWidgetView: View {
     @Environment(\.widgetFamily) private var family
 
@@ -70,12 +104,27 @@ struct RecordControl: ControlWidget {
     }
 }
 
+@available(iOS 18.0, *)
+struct DiscreetRecordControl: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: "io.github.temoin-app.temoin.control.record.discreet") {
+            ControlWidgetButton(action: StartDiscreetRecordingIntent()) {
+                Label("Écran noir", systemImage: "moon.fill")
+            }
+        }
+        .displayName("Écran noir")
+        .description("Commence à filmer immédiatement, écran noir.")
+    }
+}
+
 @main
 struct TemoinWidgetBundle: WidgetBundle {
     var body: some Widget {
         RecordWidget()
+        DiscreetRecordWidget()
         if #available(iOS 18.0, *) {
             RecordControl()
+            DiscreetRecordControl()
         }
     }
 }

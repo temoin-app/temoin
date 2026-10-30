@@ -103,6 +103,7 @@
     <string name="flash">Flash</string>
     <string name="tile_record">Film now</string>
     <string name="shortcut_record_long">Start filming now</string>
+    <string name="shortcut_discreet_long">Start filming on a dark screen</string>
     <string name="unlock_to_setup">Unlock the phone to set up Témoin.</string>
     <string name="hb_title">Get my files back</string>
     <string name="hb_help">Your videos and photos can only be read by the organizer. Ask for them: you get a code to pass on (in person, SMS, Signal…). They will send you, through another channel, a one-time link to save them on any phone, even without this app.</string>

@@ -140,6 +140,18 @@ class CaptureEngine(private val app: TemoinApp) {
         startRecording().join()
     }
 
+    /** Dark-screen widget or shortcut: the capture screen opens black, then the recording starts. */
+    private val _discreetRequest = MutableStateFlow(false)
+    val discreetRequest: StateFlow<Boolean> = _discreetRequest.asStateFlow()
+
+    fun requestDiscreetRecord() {
+        if (app.settings.server.value == null) return
+        _discreetRequest.value = true
+        requestAutoRecord()
+    }
+
+    fun consumeDiscreetRequest() { _discreetRequest.value = false }
+
     fun detachPreview(): Job = scope.launch {
         preview = null
         if (recorder == null) {

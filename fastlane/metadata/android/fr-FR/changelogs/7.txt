@@ -1,0 +1,1 @@
+Nouveau : un widget et un raccourci Écran noir lancent l'enregistrement, écran noir aussitôt. L'appareil s'ouvre en mode vidéo et les modes sont centrés au-dessus du bouton.
