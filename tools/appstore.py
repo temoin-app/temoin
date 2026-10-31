@@ -345,6 +345,9 @@ def main():
               "expired:", build["attributes"].get("expired"), "internal:", detail.get("internalBuildState"), "external:", detail.get("externalBuildState"))
         reviews = call("GET", f"/betaAppReviewSubmissions?filter[build]={build['id']}")["data"]
         print("beta review submissions:", [s["attributes"].get("betaReviewState") for s in reviews])
+        if reviews:
+            print(f"TestFlight beta review of build {build['attributes'].get('version')}: already submitted")
+            sys.exit(0)
         r = call("POST", "/betaAppReviewSubmissions", {"data": {"type": "betaAppReviewSubmissions",
                  "relationships": {"build": {"data": {"type": "builds", "id": build["id"]}}}}}, soft=True)
         print(f"TestFlight beta review of build {build['attributes'].get('version')}:", "submitted" if r is not None else "FAILED")
