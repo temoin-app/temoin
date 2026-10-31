@@ -345,6 +345,8 @@ def main():
               "expired:", build["attributes"].get("expired"), "internal:", detail.get("internalBuildState"), "external:", detail.get("externalBuildState"))
         reviews = call("GET", f"/betaAppReviewSubmissions?filter[build]={build['id']}")["data"]
         print("beta review submissions:", [s["attributes"].get("betaReviewState") for s in reviews])
+        for v in call("GET", f"/apps/{app_id}/appStoreVersions?filter[platform]=IOS&filter[versionString]={version}")["data"]:
+            print("App Store version:", v["attributes"].get("versionString"), v["attributes"].get("appStoreState"), "release:", v["attributes"].get("releaseType"))
         if reviews:
             print(f"TestFlight beta review of build {build['attributes'].get('version')}: already submitted")
             sys.exit(0)
