@@ -331,6 +331,20 @@ def main():
                 print("App Review:", "submitted" if r is not None else "FAILED")
         if FAILURES:
             sys.exit(1)
+    elif cmd == "beta-review":
+        # Beta review of the newest build for the public TestFlight group only.
+        version = sys.argv[2]
+        app_id = call("GET", "/apps?filter[bundleId]=io.github.temoin-app.temoin")["data"][0]["id"]
+        build = call("GET", f"/builds?filter[app]={app_id}&filter[preReleaseVersion.version]={version}"
+                            "&filter[processingState]=VALID&sort=-uploadedDate&limit=1")["data"][0]
+        groups = call("GET", f"/apps/{app_id}/betaGroups?limit=50")["data"]
+        public = next(g for g in groups if not g["attributes"].get("isInternalGroup") and g["attributes"].get("publicLinkEnabled"))
+        call("POST", f"/betaGroups/{public['id']}/relationships/builds", {"data": [{"type": "builds", "id": build["id"]}]}, soft=True)
+        r = call("POST", "/betaAppReviewSubmissions", {"data": {"type": "betaAppReviewSubmissions",
+                 "relationships": {"build": {"data": {"type": "builds", "id": build["id"]}}}}}, soft=True)
+        print(f"TestFlight beta review of build {build['attributes'].get('version')}:", "submitted" if r is not None else "FAILED")
+        if FAILURES:
+            sys.exit(1)
     elif cmd == "cancel-review":
         # Withdraws the version from App Review (to attach a newer build), then waits until
         # it is editable again. `metadata` then picks the newest build and `submit` resubmits.
