@@ -340,6 +340,11 @@ def main():
         groups = call("GET", f"/apps/{app_id}/betaGroups?limit=50")["data"]
         public = next(g for g in groups if not g["attributes"].get("isInternalGroup") and g["attributes"].get("publicLinkEnabled"))
         call("POST", f"/betaGroups/{public['id']}/relationships/builds", {"data": [{"type": "builds", "id": build["id"]}]}, soft=True)
+        detail = call("GET", f"/builds/{build['id']}/buildBetaDetail")["data"]["attributes"]
+        print("build:", build["attributes"].get("processingState"), "encryption:", build["attributes"].get("usesNonExemptEncryption"),
+              "expired:", build["attributes"].get("expired"), "internal:", detail.get("internalBuildState"), "external:", detail.get("externalBuildState"))
+        reviews = call("GET", f"/betaAppReviewSubmissions?filter[build]={build['id']}")["data"]
+        print("beta review submissions:", [s["attributes"].get("betaReviewState") for s in reviews])
         r = call("POST", "/betaAppReviewSubmissions", {"data": {"type": "betaAppReviewSubmissions",
                  "relationships": {"build": {"data": {"type": "builds", "id": build["id"]}}}}}, soft=True)
         print(f"TestFlight beta review of build {build['attributes'].get('version')}:", "submitted" if r is not None else "FAILED")
