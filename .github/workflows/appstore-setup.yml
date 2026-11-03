@@ -7,7 +7,7 @@ on:
       task:
         description: What to do
         type: choice
-        options: [metadata, screenshots, public-link, internal-testing, submit, replace-build, beta-review]
+        options: [metadata, screenshots, public-link, internal-testing, submit, replace-build, beta-review, certificates]
         default: metadata
 
 jobs:
@@ -47,6 +47,9 @@ jobs:
           python3 tools/appstore.py cancel-review "$version"
           python3 tools/appstore.py metadata docs/distribution/appstore.json "$version"
           python3 tools/appstore.py submit "$version"
+      - name: Signing certificates and app capabilities (read only)
+        if: inputs.task == 'certificates'
+        run: python3 tools/appstore.py certificates
       - name: TestFlight beta review of the newest build
         if: inputs.task == 'beta-review'
         run: |

@@ -8,6 +8,7 @@ Environment: APPSTORE_ISSUER_ID, APPSTORE_KEY_ID, APPSTORE_API_KEY_P8 (the .p8 c
     python3 tools/appstore.py app-exists ID         # fails with a clear message if the app record is missing
     python3 tools/appstore.py public-link ID         # TestFlight external group with a public link (created once)
     python3 tools/appstore.py metadata FILE VERSION  # App Store listing from docs/distribution/appstore.json
+    python3 tools/appstore.py certificates           # signing certificates and app capabilities (read only)
 """
 import base64
 import json
@@ -331,6 +332,13 @@ def main():
                 print("App Review:", "submitted" if r is not None else "FAILED")
         if FAILURES:
             sys.exit(1)
+    elif cmd == "certificates":
+        for c in call("GET", "/certificates?limit=200")["data"]:
+            a = c["attributes"]
+            print(a.get("certificateType"), "|", a.get("displayName") or a.get("name"), "|", "expires", (a.get("expirationDate") or "")[:10])
+        for bid in call("GET", "/bundleIds?filter[platform]=IOS&limit=50")["data"]:
+            caps = call("GET", f"/bundleIds/{bid['id']}/bundleIdCapabilities")["data"]
+            print(bid["attributes"]["identifier"], "capabilities:", sorted(c["attributes"].get("capabilityType") for c in caps))
     elif cmd == "beta-review":
         # Beta review of the newest build for the public TestFlight group only.
         version = sys.argv[2]
