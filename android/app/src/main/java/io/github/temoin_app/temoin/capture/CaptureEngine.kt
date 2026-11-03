@@ -146,6 +146,8 @@ class CaptureEngine(private val app: TemoinApp) {
 
     fun requestDiscreetRecord() {
         if (app.settings.server.value == null) return
+        // An error left from earlier would otherwise read as this recording failing to start.
+        clearError()
         _discreetRequest.value = true
         requestAutoRecord()
     }

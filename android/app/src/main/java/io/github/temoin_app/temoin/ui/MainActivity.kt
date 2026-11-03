@@ -1,6 +1,7 @@
 package io.github.temoin_app.temoin.ui
 
 import android.app.KeyguardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -36,6 +37,14 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val ACTION_QUICK_RECORD = "io.github.temoin_app.temoin.QUICK_RECORD"
         const val ACTION_QUICK_RECORD_DISCREET = "io.github.temoin_app.temoin.QUICK_RECORD_DISCREET"
+        /** Alias of this activity, not exported: only this app (tile, widget, launcher shortcuts) can start it. */
+        const val QUICK_RECORD_ALIAS = "io.github.temoin_app.temoin.ui.QuickRecord"
+
+        /** What the tile and the widgets start. */
+        fun quickRecordIntent(context: Context, discreet: Boolean): Intent = Intent()
+            .setClassName(context, QUICK_RECORD_ALIAS)
+            .setAction(if (discreet) ACTION_QUICK_RECORD_DISCREET else ACTION_QUICK_RECORD)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +82,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handle(intent: Intent?) {
-        if (intent?.action == ACTION_QUICK_RECORD || intent?.action == ACTION_QUICK_RECORD_DISCREET) {
+        // Through the alias only: any app can start this exported activity with these actions,
+        // and would otherwise start a recording, a hidden one even.
+        if (intent?.component?.className == QUICK_RECORD_ALIAS) {
             // Like a camera app: usable over the lock screen, capture only.
             setShowWhenLocked(true)
             setTurnScreenOn(true)

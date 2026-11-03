@@ -79,6 +79,8 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import io.github.temoin_app.temoin.R
 import io.github.temoin_app.temoin.TemoinApp
+import io.github.temoin_app.temoin.capture.DarkEvent
+import io.github.temoin_app.temoin.capture.DarkScreen
 import io.github.temoin_app.temoin.capture.Facing
 import io.github.temoin_app.temoin.capture.Mode
 import io.github.temoin_app.temoin.net.Api
@@ -128,30 +130,31 @@ fun CaptureScreen(app: TemoinApp, onSettings: () -> Unit, settingsAllowed: Boole
 
     // ---- keep screen on while recording; dark (discreet) mode
     // Black from the very first frame when opened by the dark-screen widget.
-    var discreet by remember { mutableStateOf(hasCamera && engine.discreetRequest.value) }
+    var dark by remember {
+        mutableStateOf(if (hasCamera && engine.discreetRequest.value) DarkScreen.WAITING else DarkScreen.OFF)
+    }
+    val discreet = dark != DarkScreen.OFF
     val discreetRequest by engine.discreetRequest.collectAsState()
     LaunchedEffect(discreetRequest, hasCamera) {
         if (discreetRequest && hasCamera) {
-            discreet = true
+            dark = dark.next(DarkEvent.Requested(st.recording))
             engine.consumeDiscreetRequest()
         }
     }
-    val view = LocalView.current
-    var wasRecording by remember { mutableStateOf(false) }
-    DisposableEffect(st.recording) {
-        view.keepScreenOn = st.recording || discreet
-        // A black screen must never hide a recording that stopped.
-        if (!st.recording && wasRecording) discreet = false
-        wasRecording = st.recording
-        onDispose { view.keepScreenOn = false }
+    LaunchedEffect(st.recording) {
+        dark = dark.next(if (st.recording) DarkEvent.RecordingStarted else DarkEvent.RecordingStopped)
     }
-    // Nor one that could not start.
-    LaunchedEffect(st.error) { if (st.error != null) discreet = false }
-    LaunchedEffect(discreet) {
-        if (discreet) {
+    LaunchedEffect(st.error) { if (st.error != null) dark = dark.next(DarkEvent.Failed) }
+    LaunchedEffect(dark) {
+        if (dark == DarkScreen.WAITING) {
             delay(5_000)
-            if (!st.recording) discreet = false
+            dark = dark.next(DarkEvent.TimedOut)
         }
+    }
+    val view = LocalView.current
+    DisposableEffect(st.recording, discreet) {
+        view.keepScreenOn = st.recording || discreet
+        onDispose { view.keepScreenOn = false }
     }
     // Window brightness only (reverts by itself when the app leaves the screen or the phone locks).
     val frontLight = st.flashOn && st.camera?.facing == Facing.FRONT
@@ -335,7 +338,7 @@ fun CaptureScreen(app: TemoinApp, onSettings: () -> Unit, settingsAllowed: Boole
             ) {
                 Box(Modifier.size(52.dp), contentAlignment = Alignment.Center) {
                     if (st.recording && st.mode != Mode.PHOTO) {
-                        IconButton(onClick = { discreet = true }) { Icon(Icons.Default.DarkMode, stringResource(R.string.discreet)) }
+                        IconButton(onClick = { dark = dark.next(DarkEvent.Requested(st.recording)) }) { Icon(Icons.Default.DarkMode, stringResource(R.string.discreet)) }
                     }
                 }
                 Shutter(
@@ -359,7 +362,7 @@ fun CaptureScreen(app: TemoinApp, onSettings: () -> Unit, settingsAllowed: Boole
             }
         }
 
-        if (discreet) DiscreetOverlay { discreet = false }
+        if (discreet) DiscreetOverlay { dark = dark.next(DarkEvent.Dismissed) }
     }
 }
 

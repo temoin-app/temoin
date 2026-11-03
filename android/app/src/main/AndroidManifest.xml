@@ -40,11 +40,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="io.github.temoin_app.temoin.QUICK_RECORD" />
-                <action android:name="io.github.temoin_app.temoin.QUICK_RECORD_DISCREET" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
             <!-- Enrollment links: srec://enroll?u=…&k=… (opened from a QR code scanned by another app) -->
             <intent-filter>
@@ -54,6 +49,12 @@
                 <data android:scheme="srec" android:host="enroll" />
             </intent-filter>
         </activity>
+        <!-- Quick recording (tile, widgets, launcher shortcuts). Not exported, so no other app can
+             start a recording: MainActivity only acts on QUICK_RECORD* when started through it. -->
+        <activity-alias
+            android:name=".ui.QuickRecord"
+            android:targetActivity=".ui.MainActivity"
+            android:exported="false" />
 
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"

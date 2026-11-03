@@ -10,7 +10,7 @@
         <intent
             android:action="io.github.temoin_app.temoin.QUICK_RECORD"
             android:targetPackage="io.github.temoin_app.temoin"
-            android:targetClass="io.github.temoin_app.temoin.ui.MainActivity" />
+            android:targetClass="io.github.temoin_app.temoin.ui.QuickRecord" />
     </shortcut>
     <shortcut
         android:shortcutId="record_discreet"
@@ -21,6 +21,6 @@
         <intent
             android:action="io.github.temoin_app.temoin.QUICK_RECORD_DISCREET"
             android:targetPackage="io.github.temoin_app.temoin"
-            android:targetClass="io.github.temoin_app.temoin.ui.MainActivity" />
+            android:targetClass="io.github.temoin_app.temoin.ui.QuickRecord" />
     </shortcut>
 </shortcuts>

@@ -1,5 +1,6 @@
 import AVFoundation
 import SwiftUI
+import TemoinCore
 
 struct CaptureView: View {
     @EnvironmentObject var model: AppModel
@@ -12,7 +13,8 @@ struct CaptureView: View {
     @State private var micDenied = AVCaptureDevice.authorizationStatus(for: .audio) == .denied
     @State private var accepting = true
     @State private var keyChanged = false
-    @State private var discreet = false
+    @State private var dark = DarkScreen.off
+    private var discreet: Bool { dark != .off }
     @State private var flashOpacity = 0.0
     @State private var pinchBase: CGFloat?
     /// Screen brightness before we changed it (front light, dark screen). iOS brightness is
@@ -121,7 +123,7 @@ struct CaptureView: View {
                 HStack {
                     ZStack {
                         if engine.recording && engine.mode != .photo {
-                            Button { discreet = true } label: { Image(systemName: "moon.fill").font(.title2) }.foregroundStyle(.white)
+                            Button { dark = dark.next(.requested(recording: engine.recording)) } label: { Image(systemName: "moon.fill").font(.title2) }.foregroundStyle(.white)
                         }
                     }.frame(width: 52, height: 52)
                     Spacer()
@@ -139,14 +141,18 @@ struct CaptureView: View {
                 .padding(.horizontal, 32).padding(.bottom, 24).padding(.top, 8)
             }
 
-            if discreet { DiscreetOverlay { discreet = false } }
+            if discreet { DiscreetOverlay { dark = dark.next(.dismissed) } }
         }
         .statusBarHidden(discreet)
         .persistentSystemOverlays(discreet ? .hidden : .automatic)
         .onChange(of: model.discreetRequested) { _ in applyDiscreetRequest() }
-        // A black screen must never hide a recording that stopped or failed.
-        .onChange(of: engine.recording) { on in if !on { discreet = false } }
-        .onChange(of: engine.error) { e in if e != nil { discreet = false } }
+        .onChange(of: engine.recording) { on in dark = dark.next(on ? .recordingStarted : .recordingStopped) }
+        .onChange(of: engine.error) { e in if e != nil { dark = dark.next(.failed) } }
+        .task(id: dark) {
+            guard dark == .waiting else { return }
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            if !Task.isCancelled { dark = dark.next(.timedOut) }
+        }
         .onAppear {
             applyDiscreetRequest()
             if authorized { engine.start(); askMicrophoneIfNeeded() } else { requestPermissions() }
@@ -156,7 +162,7 @@ struct CaptureView: View {
         .onDisappear { engine.stop() }
         .onChange(of: phase) { p in
             // iOS stops the camera in the background: close the recording cleanly.
-            if p == .background { engine.stop(); discreet = false } else if p == .active && authorized { engine.start(); askMicrophoneIfNeeded() }
+            if p == .background { engine.stop(); dark = dark.next(.dismissed) } else if p == .active && authorized { engine.start(); askMicrophoneIfNeeded() }
         }
         .onChange(of: engine.flash) { _ in
             flashOpacity = 0.8
@@ -175,12 +181,7 @@ struct CaptureView: View {
         guard model.discreetRequested else { return }
         model.discreetRequested = false
         guard authorized else { return }
-        discreet = true
-        // Never leave a black screen in front of a recording that did not start.
-        Task {
-            try? await Task.sleep(nanoseconds: 5_000_000_000)
-            if !engine.recording { discreet = false }
-        }
+        dark = dark.next(.requested(recording: engine.recording))
     }
 
     /// Launched from the "Filmer" intent / widget: switch to Live and start recording,

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Dark screen**: an error that does not stop the recording (a segment that failed to seal, a photo) no longer brings the interface back over a recording in progress; an error left from earlier no longer cancels the black screen on Android. The rule is one small tested function, the same on Android and iPhone.
+- Android: other apps can no longer start a recording, hidden or not. The tile, the widget and the launcher shortcuts go through an activity alias that is not exported.
+
 ## v0.1.6
 
 - **Dark screen shortcut**: a home screen widget and app shortcut (plus a Control Center control and Shortcuts action on iPhone, a launcher shortcut on Android) start filming with the screen black from the first frame. On Android the recording continues with the phone locked; on iPhone locking the phone ends it, as iOS stops the camera in the background.
