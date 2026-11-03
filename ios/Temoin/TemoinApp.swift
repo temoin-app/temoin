@@ -7,6 +7,11 @@ struct TemoinApp: App {
     @StateObject private var model = AppModel.shared
     @Environment(\.scenePhase) private var phase
 
+    init() {
+        // Created at the first launch, so the widgets have it before their first tap.
+        _ = WidgetToken.forApp()
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -15,8 +20,8 @@ struct TemoinApp: App {
                 .environmentObject(model.engine)
                 .preferredColorScheme(.dark)
                 .onOpenURL { url in
-                    if url.scheme == "srec" && url.host == "record" {
-                        QuickRecord.request(discreet: url.query?.contains("discreet=1") == true)
+                    if let link = QuickRecordLink(url, token: WidgetToken.forApp()) {
+                        QuickRecord.request(discreet: link.discreet)
                     } else if let link = EnrollLink(url.absoluteString) {
                         model.pendingLink = link
                     }

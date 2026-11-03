@@ -21,6 +21,11 @@ targets:
     dependencies:
       - package: TemoinCore
       - target: TemoinWidgets
+    # Shared with the widgets: the token of their srec://record links (WidgetToken).
+    entitlements:
+      path: Temoin/Temoin.entitlements
+      properties:
+        com.apple.security.application-groups: [group.io.github.temoin-app.temoin]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.temoin-app.temoin
@@ -54,6 +59,12 @@ targets:
     sources:
       - path: TemoinWidgets
       - path: Temoin/Intents
+    dependencies:
+      - package: TemoinCore
+    entitlements:
+      path: TemoinWidgets/TemoinWidgets.entitlements
+      properties:
+        com.apple.security.application-groups: [group.io.github.temoin-app.temoin]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.temoin-app.temoin.widgets

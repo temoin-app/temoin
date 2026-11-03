@@ -1,26 +1,30 @@
 import AppIntents
 import SwiftUI
+import TemoinCore
 import WidgetKit
 
 /// Lock Screen / Home Screen widget: one tap opens the app and starts filming.
 struct RecordWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "io.github.temoin-app.temoin.record", provider: Provider()) { _ in
+        StaticConfiguration(kind: "io.github.temoin-app.temoin.record", provider: Provider()) { entry in
             RecordWidgetView()
-                .widgetURL(URL(string: "srec://record"))
+                .widgetURL(QuickRecordLink(discreet: false).url(token: entry.token))
         }
         .configurationDisplayName("Filmer")
         .description("Ouvre Témoin et commence à filmer.")
         .supportedFamilies([.accessoryCircular, .systemSmall])
     }
 
-    struct Entry: TimelineEntry { let date: Date }
+    /// `token`: see WidgetToken. The app reloads the widgets when it creates it.
+    struct Entry: TimelineEntry { let date: Date; let token: String? }
 
     struct Provider: TimelineProvider {
-        func placeholder(in context: Context) -> Entry { Entry(date: .now) }
-        func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) { completion(Entry(date: .now)) }
+        func placeholder(in context: Context) -> Entry { Entry(date: .now, token: nil) }
+        func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) {
+            completion(Entry(date: .now, token: WidgetToken.forWidgets))
+        }
         func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-            completion(Timeline(entries: [Entry(date: .now)], policy: .never))
+            completion(Timeline(entries: [Entry(date: .now, token: WidgetToken.forWidgets)], policy: .never))
         }
     }
 }
@@ -28,9 +32,9 @@ struct RecordWidget: Widget {
 /// Same, but the app opens on a dark screen: its interface never shows.
 struct DiscreetRecordWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "io.github.temoin-app.temoin.record.discreet", provider: RecordWidget.Provider()) { _ in
+        StaticConfiguration(kind: "io.github.temoin-app.temoin.record.discreet", provider: RecordWidget.Provider()) { entry in
             DiscreetRecordWidgetView()
-                .widgetURL(URL(string: "srec://record?discreet=1"))
+                .widgetURL(QuickRecordLink(discreet: true).url(token: entry.token))
         }
         .configurationDisplayName("Écran noir")
         .description("Commence à filmer immédiatement, écran noir.")
