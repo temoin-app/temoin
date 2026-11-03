@@ -26,3 +26,4 @@ identity*.txt
 *.identity
 .DS_Store
 hs_err_pid*.log
+ios/TemoinCore/build/
