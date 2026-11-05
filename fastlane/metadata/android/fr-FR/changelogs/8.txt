@@ -1,0 +1,1 @@
+Écran noir : une erreur qui n'arrête pas l'enregistrement ne rallume plus l'écran. Une autre application ne peut plus lancer d'enregistrement.

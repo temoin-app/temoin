@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.1.7
 
 - **Dark screen**: an error that does not stop the recording (a segment that failed to seal, a photo) no longer brings the interface back over a recording in progress; an error left from earlier no longer cancels the black screen on Android. The rule is one small tested function, the same on Android and iPhone.
 - Android: other apps can no longer start a recording, hidden or not. The tile, the widget and the launcher shortcuts go through an activity alias that is not exported.

@@ -1,0 +1,1 @@
+Dark screen: an error that does not stop the recording no longer lights the screen up. Other apps can no longer start a recording.
