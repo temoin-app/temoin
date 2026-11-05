@@ -9,6 +9,7 @@ Environment: APPSTORE_ISSUER_ID, APPSTORE_KEY_ID, APPSTORE_API_KEY_P8 (the .p8 c
     python3 tools/appstore.py public-link ID         # TestFlight external group with a public link (created once)
     python3 tools/appstore.py metadata FILE VERSION  # App Store listing from docs/distribution/appstore.json
     python3 tools/appstore.py certificates           # signing certificates and app capabilities (read only)
+    python3 tools/appstore.py revoke-ci-dev-certs    # revoke the development certificates CI runners created
 """
 import base64
 import json
@@ -339,6 +340,19 @@ def main():
         for bid in call("GET", "/bundleIds?filter[platform]=IOS&limit=50")["data"]:
             caps = call("GET", f"/bundleIds/{bid['id']}/bundleIdCapabilities")["data"]
             print(bid["attributes"]["identifier"], "capabilities:", sorted(c["attributes"].get("capabilityType") for c in caps))
+    elif cmd == "revoke-ci-dev-certs":
+        # Each CI archive makes Xcode create an "Apple Development" certificate whose private key
+        # leaves with the runner; past the team's limit, archiving fails. Only those go: certificates
+        # made by a person (their name, not "Created via API") and Developer ID ones stay.
+        revoked = 0
+        for c in call("GET", "/certificates?filter[certificateType]=DEVELOPMENT&limit=200")["data"]:
+            a = c["attributes"]
+            if "Created via API" in (a.get("displayName"), a.get("name")):
+                if call("DELETE", f"/certificates/{c['id']}", soft=True) is not None:
+                    revoked += 1
+        print(f"development certificates created by CI: {revoked} revoked")
+        if FAILURES:
+            sys.exit(1)
     elif cmd == "beta-review":
         # Beta review of the newest build for the public TestFlight group only.
         version = sys.argv[2]

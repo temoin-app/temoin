@@ -41,6 +41,8 @@ jobs:
           python3 ../tools/appstore.py check
           python3 ../tools/appstore.py ensure-bundle-ids io.github.temoin-app.temoin io.github.temoin-app.temoin.widgets
           python3 ../tools/appstore.py app-exists io.github.temoin-app.temoin
+          # Leftovers of runs that ended before their own cleanup below.
+          python3 ../tools/appstore.py revoke-ci-dev-certs
       - name: Generate Xcode project
         run: brew install xcodegen >/dev/null && xcodegen generate
       - name: Archive (signed by Apple cloud signing)
@@ -77,6 +79,9 @@ jobs:
             -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
             -authenticationKeyID "$APPSTORE_KEY_ID" \
             -authenticationKeyIssuerID "$APPSTORE_ISSUER_ID" | tail -40
+      - name: Revoke this run's development certificate (its private key leaves with the runner)
+        if: always()
+        run: python3 ../tools/appstore.py revoke-ci-dev-certs
       - name: Remove the key file
         if: always()
         run: rm -f "$RUNNER_TEMP/AuthKey.p8"
