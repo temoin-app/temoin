@@ -216,6 +216,17 @@ def main():
                 print("registered", ident)
             else:
                 print("exists", ident)
+        # The app and its widgets share the widget token through an app group (WidgetToken).
+        for ident, b in bundle_ids().items():
+            if ident not in sys.argv[2:]:
+                continue
+            caps = call("GET", f"/bundleIds/{b['id']}/bundleIdCapabilities")["data"]
+            if any(c["attributes"].get("capabilityType") == "APP_GROUPS" for c in caps):
+                continue
+            r = call("POST", "/bundleIdCapabilities", {"data": {"type": "bundleIdCapabilities",
+                     "attributes": {"capabilityType": "APP_GROUPS"},
+                     "relationships": {"bundleId": {"data": {"type": "bundleIds", "id": b["id"]}}}}}, soft=True)
+            print(ident, "app groups capability:", "enabled" if r is not None else "FAILED")
         team = team_id(bundle_ids())
         if not team:
             sys.exit("could not find the team ID")
