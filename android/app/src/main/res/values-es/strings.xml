@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Témoin</string>
-    <string name="tagline">Graba. Encripta. Publica. Nada se queda en el teléfono.</string>
+    <string name="tagline">Graba. Cifra. Sube. Nada se queda en el teléfono.</string>
 
     <!-- onboarding -->
-    <string name="onb_title">Conectate a un servidor</string>
+    <string name="onb_title">Conectar a un servidor</string>
     <string name="onb_body">Todas las fotos y vídeos se cifran en este teléfono con la clave pública del servidor, se envían en cuanto hay red y luego se eliminan de aquí. Nadie puede verlos en el teléfono, ni siquiera tú. Solo el operador del servidor puede descifrarlos, sin conexión.</string>
     <string name="onb_scan">Escanea un código QR de invitación</string>
     <string name="onb_manual">Introduce una dirección</string>
@@ -103,6 +103,7 @@
     <string name="flash">Flash</string>
     <string name="tile_record">Grabar ahora</string>
     <string name="shortcut_record_long">Empezar a grabar ahora</string>
+    <string name="shortcut_discreet_long">Empezar a grabar con la pantalla oscura</string>
     <string name="unlock_to_setup">Desbloquea el teléfono para configurar Témoin.</string>
     <string name="hb_title">Recuperar mis archivos</string>
     <string name="hb_help">Tus vídeos y fotos solo pueden ser leídos por el organizador. Pídeselos: obtendrás un código para transmitir (en persona, por SMS, Signal…). Te enviarán, a través de otro canal, un enlace de un solo uso para guardarlos en cualquier teléfono, incluso sin esta aplicación.</string>
